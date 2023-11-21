@@ -17,20 +17,21 @@ class CityModel(Model):
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
 
         self.traffic_lights = []
+        self.obstacles = []
 
         # Load the map file. The map file is a text file where each character represents an agent.
         with open('city_files/2022_base.txt') as baseFile:
             lines = baseFile.readlines()
-            self.width = len(lines[0])-1
+            self.width = len(lines[0])
             self.height = len(lines)
 
             self.grid = MultiGrid(self.width, self.height, torus = False) 
             self.schedule = RandomActivation(self)
             
             # place test car agent
-            c = Car(0, self)
-            self.grid.place_agent(c, (0,0))
-            self.schedule.add(c)
+            # c = Car(0, self)
+            # self.grid.place_agent(c, (0,0))
+            # self.schedule.add(c)
             
 
             # Goes through each character in the map file and creates the corresponding agent.
@@ -49,10 +50,16 @@ class CityModel(Model):
                     elif col == "#":
                         agent = Obstacle(f"ob_{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
+                        self.obstacles.append((c, self.height - r - 1)) # adding all obstacle positions to a list to add costs to the a* algorithm
 
                     elif col == "D":
                         agent = Destination(f"d_{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
+                        if c == 3:
+                            ca = Car((c, self.height - r - 1), r*c, self)
+                            self.grid.place_agent(ca, (0,0))
+                            self.schedule.add(ca)
+                        
 
         self.num_agents = N
         self.running = True
