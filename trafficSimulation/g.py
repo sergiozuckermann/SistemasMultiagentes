@@ -49,22 +49,24 @@ city_map_lines = [list(line.strip()) for line in city_map.strip().split('\n')]
 city_graph = nx.DiGraph()
 
 # Iterate through the map and add nodes and edges to the graph
+n = (len(city_map_lines))
 for i in range(len(city_map_lines)):
-    for j in range(len(city_map_lines[i])):
-        symbol = city_map_lines[i][j]
-        if symbol in ('<', '>', 'v', '^', 'D', 's', 'S'):
-            city_graph.add_node((i, j), type=symbol_mapping[symbol])
+        for j in range(len(city_map_lines[i])):
+                        symbol = city_map_lines[i][j]
+                        if symbol in ('<', '>', 'v', '^', 'D', 's', 'S'):
+                                city_graph.add_node((j, n - 1), type=symbol_mapping[symbol])
 
-            # Add edges based on the direction of the streets
-            if symbol in ('<', '>', 'v', '^'):
-                if symbol == '<' and j > 0 and city_map_lines[i][j - 1] in ('<'):
-                    city_graph.add_edge((i, j), (i, j - 1))
-                elif symbol == '>' and j < len(city_map_lines[i]) - 1 and city_map_lines[i][j + 1] in ('<', '>'):
-                    city_graph.add_edge((i, j), (i, j + 1))
-                elif symbol == '^' and i > 0 and city_map_lines[i - 1][j] in ('^', 'v'):
-                    city_graph.add_edge((i, j), (i - 1, j))
-                elif symbol == 'v' and i < len(city_map_lines) - 1 and city_map_lines[i + 1][j] in ('^', 'v'):
-                    city_graph.add_edge((i, j), (i + 1, j))
+                        # Add edges based on the direction of the streets
+                        if symbol in ('<', '>', 'v', '^'):
+                                if (symbol == '<' or symbol == 'D') and j > 0 and city_map_lines[i][j - 1] in ('<', 'v'):
+                                        city_graph.add_edge((j, n-1), (j-1, n-1))
+                                elif symbol == '>' and j < len(city_map_lines[i]) - 1 and city_map_lines[i][j + 1] in ('>', '^'):
+                                        city_graph.add_edge((j, n-1), (j+1, n - 1))
+                                elif symbol == '^' and i > 0 and city_map_lines[i - 1][j] in ('^', '<'):
+                                        city_graph.add_edge((j, n - 1), (j, n))
+                                elif symbol == 'v' and i < len(city_map_lines) - 1 and city_map_lines[i + 1][j] in ('v', '>'):
+                                        city_graph.add_edge((j, n-1), (j, n - 2))
+        n-=1
                     
                     
 
