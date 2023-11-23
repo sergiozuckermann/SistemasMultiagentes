@@ -4,6 +4,7 @@ from mesa.space import MultiGrid
 from agent import *
 import json
 from g import gen_graph
+import random
 
 class CityModel(Model):
     """ 
@@ -17,9 +18,12 @@ class CityModel(Model):
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
 
-        self.traffic_lights = []
-        self.obstacles = []
         self.graph = None
+        self.traffic_lights = [] #List of traffic lights
+        self.obstacles = [] #List of obstacles
+        self.destination = [] #List of destinations
+        self.ids = 0 #Initialize the IDs used for the cars
+        self.index = 0 #The index for the spawn positions
 
         # Load the map file. The map file is a text file where each character represents an agent.
         with open('city_files/t_base.txt') as baseFile:
@@ -30,7 +34,7 @@ class CityModel(Model):
             # print(lines)
             self.width = len(lines[0])
             self.height = len(lines)
-
+            self.border = [(0,0), (0,24), (23,0), (23,24)]
             self.grid = MultiGrid(self.width, self.height, torus = False) 
             self.schedule = RandomActivation(self)
             
@@ -61,15 +65,47 @@ class CityModel(Model):
                     elif col == "D":
                         agent = Destination(f"d_{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
-                        if c == 3:
-                            ca = Car((c, self.height - r - 1), r*c, self)
-                            self.grid.place_agent(ca, (0,0))
-                            self.schedule.add(ca)
-                        
+                        self.destination.append((c, self.height - r - 1))
 
+            #Initialize the first cars
+            for i in range (4):
+                self.spawn()
+                
+                        
         self.num_agents = N
         self.running = True
+        self.steps = 0 #Steps taken
+
+    #Function to generate positions for cars to spawn in
+    def pos_gen(self):
+        Flag1=True
+        print(self.index)
+        if self.index == 3:
+            self.index -= 3
+        elif self.index < 3:
+            self.index +=1
+        check = self.grid.get_cell_list_contents(self.border[self.index])
+        for element in check:
+            if isinstance(element, Car):
+                Flag1=False
+        if Flag1:
+            return self.border[self.index]
+        else:
+            return False
+
+    #Function to create cars
+    def spawn(self):
+        pos = self.pos_gen()
+        if pos is not False:
+            self.ids += 1
+            a = Car(self.ids, self) 
+            self.schedule.add(a)
+            self.grid.place_agent(a, pos)
 
     def step(self):
-        '''Advance the model by one step.'''
+        self.steps += 1
+        #Every ten steps new cars spawn
+        if self.steps % 10 == 0:
+            for i in range(4):
+                self.spawn()
         self.schedule.step()
