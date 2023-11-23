@@ -3,6 +3,7 @@ from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 from agent import *
 import json
+from g import gen_graph
 import random
 
 class CityModel(Model):
@@ -16,6 +17,8 @@ class CityModel(Model):
 
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
+
+        self.graph = None
         self.traffic_lights = [] #List of traffic lights
         self.obstacles = [] #List of obstacles
         self.destination = [] #List of destinations
@@ -23,8 +26,12 @@ class CityModel(Model):
         self.index = 0 #The index for the spawn positions
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open('city_files/2022_base.txt') as baseFile:
+        with open('city_files/t_base.txt') as baseFile:
+            print(baseFile)
             lines = baseFile.readlines()
+            # generate the graph gicen the city map
+            self.graph = gen_graph(lines)
+            # print(lines)
             self.width = len(lines[0])
             self.height = len(lines)
             self.border = [(0,0), (0,24), (23,0), (23,24)]
