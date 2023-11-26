@@ -20,13 +20,13 @@ def initModel():
     global currentStep, cityModel, number_agents, width, height
 
     if request.method == 'POST':
-        number_agents = int(request.form.get('NAgents'))
-        width = int(request.form.get('width'))
-        height = int(request.form.get('height'))
-        currentStep = 0
+        # number_agents = int(request.form.get('NAgents'))
+        # width = int(request.form.get('width'))
+        # height = int(request.form.get('height'))
+        # currentStep = 0
 
-        print(request.form)
-        print(number_agents, width, height)
+        # print(request.form)
+        # print(number_agents, width, height)
         cityModel = CityModel()
 
         return jsonify({"message":"Parameters recieved, model initiated."})

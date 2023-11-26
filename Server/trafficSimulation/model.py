@@ -16,7 +16,7 @@ class CityModel(Model):
     def __init__(self):
 
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
-        dataDictionary = json.load(open("../city_files/mapDictionary.json"))
+        dataDictionary = json.load(open("static/city_files/mapDictionary.json"))
 
         self.graph = None   
         self.traffic_lights = [] #List of traffic lights
@@ -26,7 +26,7 @@ class CityModel(Model):
         self.index = 0 #The index for the spawn positions
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open('city_files/2022_base.txt') as baseFile:
+        with open('static/city_files/2022_base.txt') as baseFile:
             lines = baseFile.readlines()
             # generate the graph gicen the city map
             self.graph = gen_graph(lines)
