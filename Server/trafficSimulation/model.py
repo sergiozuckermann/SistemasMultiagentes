@@ -1,9 +1,9 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
-from agent import *
+from trafficSimulation.agent import *
 import json
-from g import gen_graph
+from trafficSimulation.g import gen_graph
 import random
 
 class CityModel(Model):
@@ -13,12 +13,12 @@ class CityModel(Model):
         Args:
             N: Number of agents in the simulation
     """
-    def __init__(self, N):
+    def __init__(self):
 
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
-        dataDictionary = json.load(open("city_files/mapDictionary.json"))
+        dataDictionary = json.load(open("../city_files/mapDictionary.json"))
 
-        self.graph = None
+        self.graph = None   
         self.traffic_lights = [] #List of traffic lights
         self.obstacles = [] #List of obstacles
         self.destination = [] #List of destinations
@@ -63,8 +63,7 @@ class CityModel(Model):
             for i in range (4):
                 self.spawn()
                 
-                        
-        self.num_agents = N
+        # self.num_agents = N
         self.running = True
         self.steps = 0 #Steps taken
 
