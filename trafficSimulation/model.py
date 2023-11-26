@@ -26,23 +26,15 @@ class CityModel(Model):
         self.index = 0 #The index for the spawn positions
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open('city_files/t_base.txt') as baseFile:
-            print(baseFile)
+        with open('city_files/2022_base.txt') as baseFile:
             lines = baseFile.readlines()
             # generate the graph gicen the city map
             self.graph = gen_graph(lines)
-            # print(lines)
             self.width = len(lines[0])
             self.height = len(lines)
             self.border = [(0,0), (0,24), (23,0), (23,24)]
             self.grid = MultiGrid(self.width, self.height, torus = False) 
             self.schedule = RandomActivation(self)
-            
-            # place test car agent
-            # c = Car(0, self)
-            # self.grid.place_agent(c, (0,0))
-            # self.schedule.add(c)
-            
 
             # Goes through each character in the map file and creates the corresponding agent.
             for r, row in enumerate(lines):
@@ -103,9 +95,23 @@ class CityModel(Model):
             self.grid.place_agent(a, pos)
 
     def step(self):
+        
         self.steps += 1
         #Every ten steps new cars spawn
         if self.steps % 10 == 0:
             for i in range(4):
                 self.spawn()
         self.schedule.step()
+        
+        # check if cars are cras
+        # for a_list,b in self.grid.coord_iter():
+        #     for agent in a_list:
+        #         c = 0
+        #         if isinstance(agent, Car):
+        #             c+=1
+        #     if c > 1:
+        #         print("estan chocando")
+        #         self.running = False
+        #         return
+        #     else:
+        #         print("fine")
