@@ -40,8 +40,8 @@ class Car(Agent):
             if isinstance(a, Car):
                 c+=1
         
-        print("this is c")
-        print(c)
+        # print("this is c")
+        # print(c)
         if c>1:
             print(f"crashing at pos {self.pos}")
             

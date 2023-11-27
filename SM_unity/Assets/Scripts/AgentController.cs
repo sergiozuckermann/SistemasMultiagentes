@@ -21,15 +21,17 @@ public class AgentData
         y (float): The y coordinate of the agent.
         z (float): The z coordinate of the agent.
     */
-    public string id;
+    public string id, state;
     public float x, y, z;
+ 
 
-    public AgentData(string id, float x, float y, float z)
+    public AgentData(string id, float x, float y, float z, string state)
     {
         this.id = id;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.state=state;
     }
 }
 
@@ -81,13 +83,14 @@ public class AgentController : MonoBehaviour
     string getObstaclesEndpoint = "/getObstacles";
     string sendConfigEndpoint = "/init";
     string updateEndpoint = "/update";
-    AgentsData agentsData, obstacleData;
+    // string getSemaphore = "/getSemaphore";
+    AgentsData agentsData, obstacleData; //semaphoreData
     Dictionary<string, GameObject> agents;
     Dictionary<string, Vector3> prevPositions, currPositions;
 
     bool updated = false, started = false;
 
-    public GameObject agentPrefab, obstaclePrefab, floor;
+    public GameObject agentPrefab, obstaclePrefab, floor; //SemaphorePrefab
     public int NAgents, width, height;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
@@ -96,14 +99,14 @@ public class AgentController : MonoBehaviour
     {
         agentsData = new AgentsData();
         obstacleData = new AgentsData();
-
+        // semaphoreData= new AgentsData();
         prevPositions = new Dictionary<string, Vector3>();
         currPositions = new Dictionary<string, Vector3>();
 
         agents = new Dictionary<string, GameObject>();
 
-        floor.transform.localScale = new Vector3((float)width/10, 1, (float)height/10);
-        floor.transform.localPosition = new Vector3((float)width/2-0.5f, 0, (float)height/2-0.5f);
+        
+        floor.transform.localPosition = new Vector3((float)width/2-0.5f, 1, (float)height/2-0.5f);
         
         timer = timeToUpdate;
 
@@ -187,6 +190,8 @@ public class AgentController : MonoBehaviour
             // Once the configuration has been sent, it launches a coroutine to get the agents data.
             StartCoroutine(GetAgentsData());
             StartCoroutine(GetObstacleData());
+            // StartCoroutine(GetSemaphoreData());
+
         }
     }
 
@@ -228,6 +233,41 @@ public class AgentController : MonoBehaviour
         }
     }
 
+    // IEnumerator GetSemaphore() 
+    // {
+    //     // The GetAgentsData method is used to get the agents data from the server.
+    //     UnityWebRequest www = UnityWebRequest.Get(serverUrl + getAgentsEndpoint);
+    //     yield return www.SendWebRequest();
+ 
+    //     if (www.result != UnityWebRequest.Result.Success)
+    //         Debug.Log(www.error);
+    //     else 
+    //     {
+    //         // Once the data has been received, it is stored in the agentsData variable.
+    //         // Then, it iterates over the agentsData.positions list to update the agents positions.
+    //         semaphoreData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
+
+    //         foreach(AgentData semaphore in agentsData.positions)
+    //         {
+    //             Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
+
+    //                 if(!started)
+    //                 {
+    //                     prevPositions[agent.id] = newAgentPosition;
+    //                     agents[agent.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.identity);
+    //                     green[agentPrefab.id] = semaphorePrefab.Green.GetComponent<Light>()
+    //                     red[agentPrefab.id] = semaphorePrefab.Red.GetComponent<Light>()
+    //                 }
+    //                 else
+    //                 {
+    //                     //Aquí hacer update al semaforo con enable/disable
+    //                 }
+    //         }
+
+    //         updated = true;
+    //         if(!started) started = true;
+    //     }
+    // }
     IEnumerator GetObstacleData() 
     {
         UnityWebRequest www = UnityWebRequest.Get(serverUrl + getObstaclesEndpoint);
