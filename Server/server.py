@@ -44,7 +44,7 @@ def getAgents():
     global cityModel
 
     if request.method == 'GET':
-        agentPositions = [{"id": str(element.unique_id), "x": x, "y":0, "z":z}
+        agentPositions = [{"id": str(element.unique_id), "x": x, "y":0.5, "z":z}
                           for a, (x, z) in cityModel.grid.coord_iter()
                           for element in a  
                           if isinstance(element, Car)]
