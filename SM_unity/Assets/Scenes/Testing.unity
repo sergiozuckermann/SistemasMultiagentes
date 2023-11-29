@@ -167,10 +167,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b0759b918ca91949b89946529aa6bb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  layout: {fileID: 4900000, guid: 2329b327ca0289440a9a443540aefb9f, type: 3}
+  layout: {fileID: 4900000, guid: ef090b4578778ee40984c76b36cec084, type: 3}
   roadPrefab: {fileID: 118479154725710776, guid: 66d9cc4006518364d9bc127f461cc299, type: 3}
   buildingPrefab: {fileID: 3317074415593835910, guid: 19b3b70dbcfa1054dacdf7b79075577d, type: 3}
-  semaphorePrefab: {fileID: 7346072512571026644, guid: 4f0d0a5605f239042b97e0646f799559, type: 3}
   tileSize: 1
 --- !u!1 &1044445470
 GameObject:
@@ -204,7 +203,8 @@ MonoBehaviour:
   agentPrefab: {fileID: 6167659323518830527, guid: 9b8a8fef424775a4599b841f70b76724, type: 3}
   obstaclePrefab: {fileID: 3317074415593835910, guid: 19b3b70dbcfa1054dacdf7b79075577d, type: 3}
   floor: {fileID: 118479154725710776, guid: 66d9cc4006518364d9bc127f461cc299, type: 3}
-  NAgents: 0
+  semaphorePrefab: {fileID: 7346072512571026644, guid: 4f0d0a5605f239042b97e0646f799559, type: 3}
+  NAgents: 10
   width: 1
   height: 1
   timeToUpdate: 5

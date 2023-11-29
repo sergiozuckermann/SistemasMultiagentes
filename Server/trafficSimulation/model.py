@@ -26,7 +26,7 @@ class CityModel(Model):
         self.index = 0 #The index for the spawn positions
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open('static/city_files/2022_base.txt') as baseFile:
+        with open('static/city_files/2023_base.txt') as baseFile:
             lines = baseFile.readlines()
             # generate the graph gicen the city map
             self.graph = gen_graph(lines)
@@ -36,6 +36,13 @@ class CityModel(Model):
             self.grid = MultiGrid(self.width, self.height, torus = False) 
             self.schedule = RandomActivation(self)
 
+            dict_r = {}
+            for r, row in enumerate(lines):
+                dict_c = {}
+                for c, col in enumerate(row):
+                    dict_c[c] = col
+                dict_r[r] = dict_c
+
             # Goes through each character in the map file and creates the corresponding agent.
             for r, row in enumerate(lines):
                 for c, col in enumerate(row):
@@ -43,11 +50,36 @@ class CityModel(Model):
                         agent = Road(f"r_{r*self.width+c}", self, dataDictionary[col])
                         self.grid.place_agent(agent, (c, self.height - r - 1))
 
-                    elif col in ["S", "s"]:
-                        agent = Traffic_Light(f"tl_{r*self.width+c}", self, False if col == "S" else True, int(dataDictionary[col]))
+                    elif col == "s":
+                        agent = Traffic_Light(f"tl_{r*self.width+c}", self, True, int(dataDictionary[col]))
                         self.grid.place_agent(agent, (c, self.height - r - 1))
                         self.schedule.add(agent)
                         self.traffic_lights.append(agent)
+                        if c + 1 < 25 and c - 1 > -1: 
+                            if dict_r[r][c + 1] == ">":
+                                agent.direction = "right"
+                            elif dict_r[r][c + 1] == "<":
+                                agent.direction = "left"
+                            elif dict_r[r][c - 1] == ">":
+                                agent.direction = "right"
+                            elif dict_r[r][c - 1] == "<":
+                                agent.direction = "left"                    
+
+
+                    elif col == "S":
+                        agent = Traffic_Light(f"tl_{r*self.width+c}", self, False, int(dataDictionary[col]))
+                        self.grid.place_agent(agent, (c, self.height - r - 1))
+                        self.schedule.add(agent)
+                        self.traffic_lights.append(agent)
+                        if r + 1 < 25 and r - 1 > -1: 
+                            if dict_r[r + 1][c] == "v":
+                                agent.direction = "down"
+                            elif dict_r[r + 1][c] == "^":
+                                agent.direction = "up"
+                            elif dict_r[r - 1][c] == "v":
+                                agent.direction = "down"
+                            elif dict_r[r - 1][c] == "^":
+                                agent.direction = "up"
 
                     elif col == "#":
                         agent = Obstacle(f"ob_{r*self.width+c}", self)
