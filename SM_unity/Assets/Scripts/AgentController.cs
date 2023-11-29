@@ -21,17 +21,18 @@ public class AgentData
         y (float): The y coordinate of the agent.
         z (float): The z coordinate of the agent.
     */
-    public string id, state;
+    public string id, state, direction;
     public float x, y, z;
  
 
-    public AgentData(string id, float x, float y, float z, string state)
+    public AgentData(string id, float x, float y, float z, string state, string direction)
     {
         this.id = id;
         this.x = x;
         this.y = y;
         this.z = z;
         this.state=state;
+        this.direction = direction;
     }
 }
 
@@ -84,14 +85,19 @@ public class AgentController : MonoBehaviour
     string getDestinationsUrl = "/getDestinations";
     string sendConfigEndpoint = "/init";
     string updateEndpoint = "/update";
-    // string getSemaphore = "/getSemaphore";
-    AgentsData agentsData, destinationsData; //semaphoreData
+
+    AgentsData agentsData, destinationsData, semaphoreData; //semaphoreData
     Dictionary<string, GameObject> agents;
     Dictionary<string, Vector3> agentDestinations, prevPositions, currPositions;
+    
+    string getSemaphore = "/getSemaphore";
+    
+  
+    Dictionary <string, Light> lights;
 
-    bool updated = false, started = false;
+    bool updated = false, started = false, starteds=false;
 
-    public GameObject agentPrefab, obstaclePrefab, floor; //SemaphorePrefab
+    public GameObject agentPrefab, obstaclePrefab, floor, semaphorePrefab; 
     public int NAgents, width, height;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
@@ -99,12 +105,13 @@ public class AgentController : MonoBehaviour
     void Start()
     {
         agentsData = new AgentsData();
+
         destinationsData = new AgentsData();
         agentDestinations = new Dictionary<string, Vector3>();
-        // semaphoreData= new AgentsData();
+        semaphoreData= new AgentsData();
         prevPositions = new Dictionary<string, Vector3>();
         currPositions = new Dictionary<string, Vector3>();
-
+        lights = new Dictionary<string, Light>();
         agents = new Dictionary<string, GameObject>();
         floor.transform.localScale = new Vector3((float)width / 10, 1, (float)height / 10);
 
@@ -144,6 +151,7 @@ public class AgentController : MonoBehaviour
         else
         {
             StartCoroutine(GetAgentsData());
+            StartCoroutine(GetSemaphoreData());
         }
     }
 
@@ -177,7 +185,7 @@ public class AgentController : MonoBehaviour
             // Once the configuration has been sent, it launches a coroutine to get the agents data.
             StartCoroutine(GetAgentsData());
             StartCoroutine(GetDestinationsData());
-            // StartCoroutine(GetSemaphoreData());
+            StartCoroutine(GetSemaphoreData());
 
         }
     }
@@ -250,42 +258,58 @@ public class AgentController : MonoBehaviour
         }
     }
 
-        // IEnumerator GetSemaphore() 
-        // {
-        //     // The GetAgentsData method is used to get the agents data from the server.
-        //     UnityWebRequest www = UnityWebRequest.Get(serverUrl + getAgentsEndpoint);
-        //     yield return www.SendWebRequest();
 
-        //     if (www.result != UnityWebRequest.Result.Success)
-        //         Debug.Log(www.error);
-        //     else 
-        //     {
-        //         // Once the data has been received, it is stored in the agentsData variable.
-        //         // Then, it iterates over the agentsData.positions list to update the agents positions.
-        //         semaphoreData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
+    IEnumerator GetSemaphoreData() 
+    {
+        // The GetAgentsData method is used to get the agents data from the server.
+        UnityWebRequest www = UnityWebRequest.Get(serverUrl + getSemaphore);
+        yield return www.SendWebRequest();
 
-        //         foreach(AgentData semaphore in agentsData.positions)
-        //         {
-        //             Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
+        if (www.result != UnityWebRequest.Result.Success)
+            Debug.Log(www.error);
+        else 
+        {
+            // Once the data has been received, it is stored in the agentsData variable.
+            // Then, it iterates over the agentsData.positions list to update the agents positions.
+            semaphoreData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
+            foreach(AgentData semaphore in semaphoreData.positions)
+            {
+                Vector3 newAgentPosition = new Vector3(semaphore.x, semaphore.y, semaphore.z);
+                    if(!starteds)
+                    {
+                        prevPositions[semaphore.id] = newAgentPosition;
+                        if(semaphore.direction == "right"){
+                            agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.identity);
+                        }
+                        else if(semaphore.direction == "left"){
+                            agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.Euler(0, 180, 0));
+                        }
+                        else if(semaphore.direction == "up"){
+                            agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.Euler(0, 270, 0));
+                        }
+                        else if(semaphore.direction == "down"){
+                            agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.Euler(0, 90, 0));   
+                        }
+                    
+                        lights[semaphore.id] = agents[semaphore.id].GetComponentInChildren<Light>();
 
-        //                 if(!started)
-        //                 {
-        //                     prevPositions[agent.id] = newAgentPosition;
-        //                     agents[agent.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.identity);
-        //                     green[agentPrefab.id] = semaphorePrefab.Green.GetComponent<Light>()
-        //                     red[agentPrefab.id] = semaphorePrefab.Red.GetComponent<Light>()
-        //                 }
-        //                 else
-        //                 {
-        //                     //Aquí hacer update al semaforo con enable/disable
-        //                 }
-        //         }
+                    }
+                    else
+                    {
+                        if (semaphore.state == "True"){
+                            lights[semaphore.id].color= Color.green;
+                        }
+                        else if (semaphore.state == "False"){
+                            lights[semaphore.id].color= Color.red;
+                        }
+                    }
+            }
 
-        //         updated = true;
-        //         if(!started) started = true;
-        //     }
-        // }
-
+            updated = true;
+            if(!starteds) starteds = true;
+        }
+    }
+        
         IEnumerator GetDestinationsData()
         {
             // The GetAgentsData method is used to get the agents data from the server.
@@ -318,25 +342,4 @@ public class AgentController : MonoBehaviour
             }
         }
 
-
-        //    IEnumerator GetObstacleData()
-        //{
-        //    UnityWebRequest www = UnityWebRequest.Get(serverUrl + getObstaclesEndpoint);
-        //    yield return www.SendWebRequest();
-
-        //    if (www.result != UnityWebRequest.Result.Success)
-        //        Debug.Log(www.error);
-        //    else
-        //    {
-        //        obstacleData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
-
-        //        Debug.Log(obstacleData.positions);
-
-        //        foreach (AgentData obstacle in obstacleData.positions)
-        //        {
-        //            Instantiate(obstaclePrefab, new Vector3(obstacle.x, obstacle.y, obstacle.z), Quaternion.identity);
-        //        }
-        //    }
-        //}
-    //}
-}
+    }
