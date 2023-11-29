@@ -21,17 +21,18 @@ public class AgentData
         y (float): The y coordinate of the agent.
         z (float): The z coordinate of the agent.
     */
-    public string id, state;
+    public string id, state, direction;
     public float x, y, z;
  
 
-    public AgentData(string id, float x, float y, float z, string state)
+    public AgentData(string id, float x, float y, float z, string state, string direction)
     {
         this.id = id;
         this.x = x;
         this.y = y;
         this.z = z;
         this.state=state;
+        this.direction = direction;
     }
 }
 
@@ -87,9 +88,9 @@ public class AgentController : MonoBehaviour
     AgentsData agentsData, obstacleData, semaphoreData; 
     Dictionary<string, GameObject> agents;
     Dictionary<string, Vector3> prevPositions, currPositions;
-    Dictionary <string, Light> green, red;
+    Dictionary <string, Light> lights;
 
-    bool updated = false, started = false;
+    bool updated = false, started = false, starteds=false;
 
     public GameObject agentPrefab, obstaclePrefab, floor, semaphorePrefab; 
     public int NAgents, width, height;
@@ -103,7 +104,7 @@ public class AgentController : MonoBehaviour
         semaphoreData= new AgentsData();
         prevPositions = new Dictionary<string, Vector3>();
         currPositions = new Dictionary<string, Vector3>();
-
+        lights = new Dictionary<string, Light>();
         agents = new Dictionary<string, GameObject>();
 
 
@@ -257,33 +258,41 @@ public class AgentController : MonoBehaviour
             // Once the data has been received, it is stored in the agentsData variable.
             // Then, it iterates over the agentsData.positions list to update the agents positions.
             semaphoreData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
-
             foreach(AgentData semaphore in semaphoreData.positions)
             {
                 Vector3 newAgentPosition = new Vector3(semaphore.x, semaphore.y, semaphore.z);
-
-                    if(!started)
+                    if(!starteds)
                     {
                         prevPositions[semaphore.id] = newAgentPosition;
-                        agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.identity);
-                        green[semaphore.id] = agents[semaphore.id].transform.Find("Green").GetComponent<Light>();
-                        red[semaphore.id] = agents[semaphore.id].transform.Find("Red").GetComponent<Light>();
+                        if(semaphore.direction == "right"){
+                            agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.identity);
+                        }
+                        else if(semaphore.direction == "left"){
+                            agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.Euler(0, 180, 0));
+                        }
+                        else if(semaphore.direction == "up"){
+                            agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.Euler(0, 270, 0));
+                        }
+                        else if(semaphore.direction == "down"){
+                            agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.Euler(0, 90, 0));   
+                        }
+                    
+                        lights[semaphore.id] = agents[semaphore.id].GetComponentInChildren<Light>();
+
                     }
                     else
                     {
                         if (semaphore.state == "True"){
-                            red[semaphore.id].enabled= false;
-                            green[semaphore.id].enabled= true;
+                            lights[semaphore.id].color= Color.green;
                         }
                         else if (semaphore.state == "False"){
-                            red[semaphore.id].enabled= true;
-                            green[semaphore.id].enabled= false;
+                            lights[semaphore.id].color= Color.red;
                         }
                     }
             }
 
             updated = true;
-            if(!started) started = true;
+            if(!starteds) starteds = true;
         }
     }
         

@@ -56,12 +56,13 @@ def getSemaphore():
     global cityModel
 
     if request.method == 'GET':
-        agentState = [{"state": str(element.state), "id": str(element.unique_id), "x": x, "y":0, "z":z}
+        agentState = [{"state": str(element.state), "id": str(element.unique_id), "x": x, "y":0, "z":z, "direction": element.direction}
+       
                            for a, (x, z) in cityModel.grid.coord_iter()
                            for element in a  
                            if isinstance(element, Traffic_Light)]
         print(agentState)
-        return jsonify({'state':agentState})
+        return jsonify({'positions':agentState})
 
 @app.route('/getObstacles', methods=['GET'])
 def getObstacles():
