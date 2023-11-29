@@ -95,7 +95,8 @@ public class AgentController : MonoBehaviour
   
     Dictionary <string, Light> lights;
 
-    bool updated = false, started = false, starteds=false;
+    bool updated = false, starteds=false;
+    bool updated = false, starteds=false;
 
     public GameObject agentPrefab, obstaclePrefab, floor, semaphorePrefab; 
     public int NAgents, width, height;
@@ -224,6 +225,9 @@ public class AgentController : MonoBehaviour
                 {
                     //GameObject carAgent;
                     if (agents.TryGetValue(agent.id, out car))
+
+                    Vector3 currentPosition = new Vector3();
+                    if (currPositions.TryGetValue(agent.id, out currentPosition))
                     {
 
                         car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
@@ -232,6 +236,10 @@ public class AgentController : MonoBehaviour
                     else
                     {
                         agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
+                        print("aqui esta mal " + agent.id);
+                        print("aqui esta mal " + agent.id);
+                    }
+                    currPositions[agent.id] = newAgentPosition;
                         car = agents[agent.id];
                         car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
                         car.GetComponent<MoveCar>().setMoveTime(timeToUpdate);
@@ -253,7 +261,8 @@ public class AgentController : MonoBehaviour
                 }
 
                 updated = true;
-                if (!started) started = true;
+
+
             }
         }
     }

@@ -6,6 +6,7 @@ public class CityMaker : MonoBehaviour
 {
     [SerializeField] TextAsset layout;
     [SerializeField] GameObject roadPrefab;
+    [SerializeField] GameObject emptyRoadPrefab;
     [SerializeField] GameObject buildingPrefab;
     [SerializeField] int tileSize;
 
@@ -35,24 +36,34 @@ public class CityMaker : MonoBehaviour
         GameObject tile;
 
         for (int i=0; i<tiles.Length; i++) {
-            if (tiles[i] == '>' || tiles[i] == '<') {
+            if (tiles[i] == '>' || tiles[i] == '<' || tiles[i] == 'v' || tiles[i] == '^') {
                 position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(roadPrefab, position, Quaternion.identity);
-                tile.transform.parent = transform;
+                if (tiles[i] == '<'){
+                    tile = Instantiate(roadPrefab, position, Quaternion.identity);
+                    tile.transform.parent = transform;
+                }
+                else if (tiles[i] == '>'){
+                    tile = Instantiate(roadPrefab, position, Quaternion.Euler(0, 180, 0));
+                    tile.transform.parent = transform;
+                }
+                else if (tiles[i] == 'v'){
+                    tile = Instantiate(roadPrefab, position, Quaternion.Euler(0, 270, 0));
+                    tile.transform.parent = transform;
+                }                
+                else if (tiles[i] == '^'){
+                    tile = Instantiate(roadPrefab, position, Quaternion.Euler(0, 90, 0));
+                    tile.transform.parent = transform;
+                }
                 x += 1;
-            } else if (tiles[i] == 'v' || tiles[i] == '^') {
-                position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(roadPrefab, position, Quaternion.Euler(0, 90, 0));
-                tile.transform.parent = transform;
-                x += 1;
+
             } else if (tiles[i] == 's') {
                 position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(roadPrefab, position, Quaternion.identity);
+                tile = Instantiate(emptyRoadPrefab, position, Quaternion.identity);
                 tile.transform.parent = transform;
                 x += 1;
             } else if (tiles[i] == 'S') {
                 position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(roadPrefab, position, Quaternion.Euler(0, 90, 0));
+                tile = Instantiate(emptyRoadPrefab, position, Quaternion.Euler(0, 90, 0));
                 tile.transform.parent = transform;
                 x += 1;
             } else if (tiles[i] == 'D'){

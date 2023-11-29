@@ -152,6 +152,8 @@ public class MoveCar : MonoBehaviour
             // transformation matrix for the wheels
             Matrix4x4 wheelTransform = HW_Transforms.TranslationMat(wheelPositions[i].x, wheelPositions[i].y, wheelPositions[i].z);
 
+            // composite matrix fro the wheels
+            Matrix4x4 wheelComposite = carComposite * wheelTransform * rotateW;
             // composite matrix for the wheels
             Matrix4x4 wheelComposite = carComposite * wheelTransform * rotateW;
             for (int j = 0; j < wheelNewVertices[i].Length; j++)
