@@ -8,8 +8,11 @@ using UnityEngine;
 
 public class MoveCar : MonoBehaviour
 {
+    //AgentData agentData;
+    [SerializeField] GameObject go;
+
     // displacement vector where the car will move
-    [SerializeField] Vector3 displacement;
+    Vector3 displacement;
     
     // wheel game object
     [SerializeField] GameObject wheel;
@@ -43,6 +46,14 @@ public class MoveCar : MonoBehaviour
     //Vector3 w2Pos = new Vector3(1.279f, -0.37f, 1.98f);
     //Vector3 w3Pos = new Vector3(-1.26f, -0.37f, 1.98f);
     //Vector3 w4Pos = new Vector3(-1.26f, -0.37f, -1.892f);
+
+    float elapsedTime = 0f, prevAngle = 0f;
+    public float moveTime;
+    float t;
+
+    public bool starting = true, hasReachedDestination = false;
+
+    Vector3 startPos, finalPos;
 
     // Start is called before the first frame update
     void Start()
@@ -87,22 +98,34 @@ public class MoveCar : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        DoTransform();
+            if(elapsedTime < moveTime)
+        {
+            DoTransform();
+        }
+            elapsedTime += Time.deltaTime;
+
     }
 
-    void DoTransform()
+    public void DoTransform()
     {
-        // get angle in the direction of the displacement
-        angle = Mathf.Atan2(displacement.x, displacement.z) * Mathf.Rad2Deg;
+
+        t = elapsedTime / moveTime;
+
+        displacement = startPos + (finalPos - startPos) * t;
+
+        float angle = getAngle();
 
         // move matrix for the car
-        Matrix4x4 move = HW_Transforms.TranslationMat(displacement.x * Time.time, displacement.y * Time.time, displacement.z * Time.time);
+        Matrix4x4 move = HW_Transforms.TranslationMat(displacement.x, displacement.y, displacement.z);
 
         // rotate matrix for the car
         Matrix4x4 rotate = HW_Transforms.RotateMat(angle, AXIS.Y);
 
+        // scale matrix for the car
+        Matrix4x4 carScale = HW_Transforms.ScaleMat(0.25f, 0.25f, 0.25f);
+
         // composite matrix for the car
-        Matrix4x4 carComposite = move * rotate;
+        Matrix4x4 carComposite = move * rotate * carScale;
         for (int i = 0; i < newVertices.Length; i++)
         {
             Vector4 temp = new Vector4(baseVertices[i].x, baseVertices[i].y, baseVertices[i].z, 1);
@@ -115,12 +138,13 @@ public class MoveCar : MonoBehaviour
 
         // recalculate normals of the car mesh
         mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
 
         // rotate matrix for the wheels
         Matrix4x4 rotateW = HW_Transforms.RotateMat(angleW * Time.time, AXIS.X);
 
         // scale matrix for the wheels
-        Matrix4x4 scaleTransform = HW_Transforms.ScaleMat(1.5f, 1.5f, 1.5f);
+        Matrix4x4 scaleTransform = HW_Transforms.ScaleMat(0.5f, 0.5f, 0.5f);
 
         for(int i = 0; i < 4; i++)
         {
@@ -128,8 +152,8 @@ public class MoveCar : MonoBehaviour
             // transformation matrix for the wheels
             Matrix4x4 wheelTransform = HW_Transforms.TranslationMat(wheelPositions[i].x, wheelPositions[i].y, wheelPositions[i].z);
 
-            // composite matrix fro the wheels
-            Matrix4x4 wheelComposite = carComposite * wheelTransform * rotateW * scaleTransform;
+            // composite matrix for the wheels
+            Matrix4x4 wheelComposite = carComposite * wheelTransform * rotateW;
             for (int j = 0; j < wheelNewVertices[i].Length; j++)
             {
                 Vector4 temp = new Vector4(wheelBaseVertices[i][j].x, wheelBaseVertices[i][j].y, wheelBaseVertices[i][j].z, 1);
@@ -141,9 +165,61 @@ public class MoveCar : MonoBehaviour
 
             // Recalculate normals of the current wheel mesh
             wheelMeshes[i].RecalculateNormals();
+            wheelMeshes[i].RecalculateBounds();
 
 
         }
      
     }
+
+    public float getAngle()
+    {
+        // check if car agent has reached its destination to keep the rotation angle
+        if(displacement == finalPos)
+        {
+            angle = prevAngle;
+        } 
+        // get angle in the direction of the displacement
+        else
+        {
+        Vector3 direction = finalPos - startPos;
+        angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        prevAngle = angle;
+        }
+
+        return angle;
+    }
+
+    public void setNextPosition(Vector3 newPos)   
+    {
+        if(starting)
+        {
+            starting = false;
+            startPos = newPos;
+            finalPos = newPos;
+        }
+        startPos = finalPos;
+        finalPos = newPos;
+        elapsedTime = 0f;
+
+
+    }
+
+    public void setMoveTime(float time)
+    {
+        moveTime = time;
+    }
+
+    public void DestroyAll(Vector3 p)
+    {
+        Debug.Log("destroyed called");
+        for(int i = 0; i < wheels.Length; i++)
+        {
+            Destroy(wheels[i]); // destroy wheels
+        }
+        Destroy(gameObject); // destroy car
+        Debug.Log("destroyed all");
+        Instantiate(go, p, Quaternion.identity);
+    }
+
 }
