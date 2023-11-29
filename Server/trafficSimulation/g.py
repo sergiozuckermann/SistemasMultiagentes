@@ -121,7 +121,7 @@ def gen_graph(map_lines):
         # pos = dict((node, node) for node in city_graph.nodes())
         # nx.draw(city_graph, pos, with_labels=True, font_weight='bold', node_size=700, node_color='lightgray', arrowsize=20)
         # plt.show()
-        
+
         return city_graph
                     
                     

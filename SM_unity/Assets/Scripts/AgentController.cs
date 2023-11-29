@@ -82,12 +82,17 @@ public class AgentController : MonoBehaviour
     string serverUrl = "http://localhost:8585";
     string getAgentsEndpoint = "/getAgents";
     string getObstaclesEndpoint = "/getObstacles";
+    string getDestinationsUrl = "/getDestinations";
     string sendConfigEndpoint = "/init";
     string updateEndpoint = "/update";
-    string getSemaphore = "/getSemaphore";
-    AgentsData agentsData, obstacleData, semaphoreData; 
+
+    AgentsData agentsData, destinationsData, semaphoreData; //semaphoreData
     Dictionary<string, GameObject> agents;
-    Dictionary<string, Vector3> prevPositions, currPositions;
+    Dictionary<string, Vector3> agentDestinations, prevPositions, currPositions;
+    
+    string getSemaphore = "/getSemaphore";
+    
+  
     Dictionary <string, Light> lights;
 
     bool updated = false, started = false, starteds=false;
@@ -100,13 +105,15 @@ public class AgentController : MonoBehaviour
     void Start()
     {
         agentsData = new AgentsData();
-        obstacleData = new AgentsData();
+
+        destinationsData = new AgentsData();
+        agentDestinations = new Dictionary<string, Vector3>();
         semaphoreData= new AgentsData();
         prevPositions = new Dictionary<string, Vector3>();
         currPositions = new Dictionary<string, Vector3>();
         lights = new Dictionary<string, Light>();
         agents = new Dictionary<string, GameObject>();
-
+        floor.transform.localScale = new Vector3((float)width / 10, 1, (float)height / 10);
 
         floor.transform.localPosition = new Vector3((float)width / 2 - 0.5f, 1, (float)height / 2 - 0.5f);
 
@@ -127,25 +134,10 @@ public class AgentController : MonoBehaviour
 
         if (updated)
         {
-            timer -= Time.deltaTime;
-            dt = 1.0f - (timer / timeToUpdate);
-
-            // Iterates over the agents to update their positions.
-            // The positions are interpolated between the previous and current positions.
-            foreach (var agent in currPositions)
-            {
-                Vector3 currentPosition = agent.Value;
-                Vector3 previousPosition = prevPositions[agent.Key];
-
-                Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
-                Vector3 direction = currentPosition - interpolated;
-
-                agents[agent.Key].transform.localPosition = interpolated;
-                if (direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
-            }
-
-            // float t = (timer / timeToUpdate);
-            // dt = t * t * ( 3f - 2f*t);
+           timer -= Time.deltaTime;
+     
+        //    // float t = (timer / timeToUpdate);
+        //    // dt = t * t * ( 3f - 2f*t);
         }
     }
 
@@ -192,7 +184,7 @@ public class AgentController : MonoBehaviour
 
             // Once the configuration has been sent, it launches a coroutine to get the agents data.
             StartCoroutine(GetAgentsData());
-            //StartCoroutine(GetObstacleData());
+            StartCoroutine(GetDestinationsData());
             StartCoroutine(GetSemaphoreData());
 
         }
@@ -214,29 +206,50 @@ public class AgentController : MonoBehaviour
             Debug.Log("updating..");
             agentsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
+            Vector3 destinationPos;
             foreach (AgentData agent in agentsData.positions)
             {
                 Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
 
+                GameObject car;
                 if (!started)
                 {
-                    prevPositions[agent.id] = newAgentPosition;
+                    //prevPositions[agent.id] = newAgentPosition;
                     agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
+                    car = agents[agent.id];
+                    car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
+                    car.GetComponent<MoveCar>().setMoveTime(timeToUpdate);
                 }
                 else
                 {
-                    Vector3 currentPosition = new Vector3();
-                    if (currPositions.TryGetValue(agent.id, out currentPosition))
+                    //GameObject carAgent;
+                    if (agents.TryGetValue(agent.id, out car))
                     {
-                        prevPositions[agent.id] = currentPosition;
+
+                        car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
                     }
+
                     else
                     {
-                        prevPositions[agent.id] = newAgentPosition;
                         agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
-                    }
-                    currPositions[agent.id] = newAgentPosition;
+                        car = agents[agent.id];
+                        car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
+                        car.GetComponent<MoveCar>().setMoveTime(timeToUpdate);
 
+                    }
+
+                }
+
+                // check if next destination is the car agent's destination
+                if (agentDestinations.TryGetValue(agent.id, out destinationPos))
+                {
+                    Debug.Log("innn");
+                    if(newAgentPosition == destinationPos)
+                    {
+                        Debug.Log("enterinf");
+                        agents[agent.id].GetComponent<MoveCar>().DestroyAll(destinationPos);
+                        //agents[agent.id].GetComponent<MoveCar>().hasReachedDestination = true;
+                    }
                 }
 
                 updated = true;
@@ -244,6 +257,7 @@ public class AgentController : MonoBehaviour
             }
         }
     }
+
 
     IEnumerator GetSemaphoreData() 
     {
@@ -296,23 +310,36 @@ public class AgentController : MonoBehaviour
         }
     }
         
-        IEnumerator GetObstacleData()
+        IEnumerator GetDestinationsData()
         {
-            UnityWebRequest www = UnityWebRequest.Get(serverUrl + getObstaclesEndpoint);
+            // The GetAgentsData method is used to get the agents data from the server.
+
+            UnityWebRequest www = UnityWebRequest.Get(serverUrl + getDestinationsUrl);
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
                 Debug.Log(www.error);
             else
             {
-                obstacleData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
+                // Once the data has been received, it is stored in the agentsData variable.
+                // Then, it iterates over the agentsData.positions list to update the agents positions.
+                destinationsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-                Debug.Log(obstacleData.positions);
-
-                foreach (AgentData obstacle in obstacleData.positions)
+                Vector3 v;
+                foreach (AgentData agentDestination in destinationsData.positions)
                 {
-                    Instantiate(obstaclePrefab, new Vector3(obstacle.x, obstacle.y, obstacle.z), Quaternion.identity);
+                    Vector3 destinationPosition = new Vector3(agentDestination.x, agentDestination.y, agentDestination.z);
+
+                    // add destination of agent if id is not in the dictionary
+                    if (agentDestinations.TryGetValue(agentDestination.id, out v)== false)
+                    {
+                        
+                        agentDestinations[agentDestination.id] = destinationPosition;
+                    }
                 }
+
+            Debug.Log(agentDestinations);
             }
         }
+
     }

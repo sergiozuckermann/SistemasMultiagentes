@@ -44,7 +44,7 @@ def getAgents():
     global cityModel
 
     if request.method == 'GET':
-        agentPositions = [{"id": str(element.unique_id), "x": x, "y":0.5, "z":z}
+        agentPositions = [{"id": str(element.unique_id), "x": x, "y":0.2, "z":z}
                           for a, (x, z) in cityModel.grid.coord_iter()
                           for element in a  
                           if isinstance(element, Car)]
@@ -64,6 +64,18 @@ def getSemaphore():
         print(agentState)
         return jsonify({'positions':agentState})
 
+@app.route('/getDestinations', methods=['GET'])
+def getDestinations():
+    global cityModel
+    
+    if request.method == 'GET':
+        destinations = [{"id": str(element.unique_id), "x": element.destination[0], "y":0.2, "z":element.destination[1]} 
+                          for a, (x, z) in cityModel.grid.coord_iter()
+                          for element in a  
+                          if isinstance(element, Car)]
+        print(destinations)
+        return jsonify({'positions':destinations})
+
 @app.route('/getObstacles', methods=['GET'])
 def getObstacles():
     global cityModel
@@ -74,7 +86,6 @@ def getObstacles():
                         if isinstance(a, Car)]
 
         return jsonify({'positions':carPositions})
-
 
 @app.route('/update', methods=['GET'])
 def updateModel():
