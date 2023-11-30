@@ -9,7 +9,7 @@ using UnityEngine;
 public class MoveCar : MonoBehaviour
 {
     //AgentData agentData;
-    [SerializeField] GameObject go;
+
 
     // displacement vector where the car will move
     Vector3 displacement;
@@ -53,15 +53,16 @@ public class MoveCar : MonoBehaviour
 
     public bool starting = true, hasReachedDestination = false;
 
-    Vector3 startPos, finalPos;
+    Vector3 startPos, finalPos, zeroes;
 
     // Start is called before the first frame update
     void Start()
     {
+        zeroes = new Vector3(0,0,0);
         // instantiate wheels in origin 
         for(int i = 0; i < wheels.Length; i++)
         {
-            wheels[i] = Instantiate(wheel, Vector3.zero, Quaternion.identity);
+            wheels[i] = Instantiate(wheel, zeroes, Quaternion.identity);
         }
 
         // get mesh of the car
@@ -82,13 +83,14 @@ public class MoveCar : MonoBehaviour
         {
             wheelMeshes[i] = wheels[i].GetComponentInChildren<MeshFilter>().mesh;
             wheelBaseVertices[i] = wheelMeshes[i].vertices;
+            wheelNewVertices[i] = new Vector3 [wheelBaseVertices[i].Length];
         }
 
         // copy vertices of the wheels
         for (int i = 0; i < 4; i++)
         {
-            wheelNewVertices[i] = new Vector3[wheelBaseVertices[i].Length];
-            for(int j = 0; j < 4; j++)
+
+            for(int j = 0; j < wheelBaseVertices[i].Length; j++)
             {   
                 wheelNewVertices[i][j] = wheelBaseVertices[i][j];
             }
@@ -119,13 +121,13 @@ public class MoveCar : MonoBehaviour
         Matrix4x4 move = HW_Transforms.TranslationMat(displacement.x, displacement.y, displacement.z);
 
         // rotate matrix for the car
-        Matrix4x4 rotate = HW_Transforms.RotateMat(angle, AXIS.Y);
+        Matrix4x4 rotate = HW_Transforms.RotateMat(angle + 180, AXIS.Y);
 
         // scale matrix for the car
-        Matrix4x4 carScale = HW_Transforms.ScaleMat(0.25f, 0.25f, 0.25f);
+        Matrix4x4 carScale = HW_Transforms.ScaleMat(.05f, .05f, .05f);
 
         // composite matrix for the car
-        Matrix4x4 carComposite = move * rotate * carScale;
+        Matrix4x4 carComposite = move * rotate;
         for (int i = 0; i < newVertices.Length; i++)
         {
             Vector4 temp = new Vector4(baseVertices[i].x, baseVertices[i].y, baseVertices[i].z, 1);
@@ -153,7 +155,7 @@ public class MoveCar : MonoBehaviour
             Matrix4x4 wheelTransform = HW_Transforms.TranslationMat(wheelPositions[i].x, wheelPositions[i].y, wheelPositions[i].z);
 
             // composite matrix for the wheels
-            Matrix4x4 wheelComposite = carComposite * wheelTransform * rotateW;
+            Matrix4x4 wheelComposite = carComposite * wheelTransform; //rotateW
             for (int j = 0; j < wheelNewVertices[i].Length; j++)
             {
                 Vector4 temp = new Vector4(wheelBaseVertices[i][j].x, wheelBaseVertices[i][j].y, wheelBaseVertices[i][j].z, 1);
@@ -210,7 +212,7 @@ public class MoveCar : MonoBehaviour
         moveTime = time;
     }
 
-    public void DestroyAll(Vector3 p)
+    public void DestroyAll()
     {
         Debug.Log("destroyed called");
         for(int i = 0; i < wheels.Length; i++)
@@ -218,8 +220,7 @@ public class MoveCar : MonoBehaviour
             Destroy(wheels[i]); // destroy wheels
         }
         Destroy(gameObject); // destroy car
-        Debug.Log("destroyed all");
-        Instantiate(go, p, Quaternion.identity);
+      
     }
 
 }
