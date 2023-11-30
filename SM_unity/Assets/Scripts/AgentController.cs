@@ -95,8 +95,7 @@ public class AgentController : MonoBehaviour
   
     Dictionary <string, Light> lights;
 
-    bool updated = false, starteds=false;
-    bool updated = false, starteds=false;
+    bool updated = false, started = false, starteds=false;
 
     public GameObject agentPrefab, obstaclePrefab, floor, semaphorePrefab; 
     public int NAgents, width, height;
@@ -132,10 +131,16 @@ public class AgentController : MonoBehaviour
             updated = false;
             StartCoroutine(UpdateSimulation());
         }
-
+        
         if (updated)
         {
-           timer -= Time.deltaTime;
+            timer -= Time.deltaTime;
+            Vector3 destinationPos;
+           foreach (AgentData agent in agentsData.positions)
+            {
+                
+            }
+            
      
         //    // float t = (timer / timeToUpdate);
         //    // dt = t * t * ( 3f - 2f*t);
@@ -152,7 +157,9 @@ public class AgentController : MonoBehaviour
         else
         {
             StartCoroutine(GetAgentsData());
+            StartCoroutine(GetDestinationsData());
             StartCoroutine(GetSemaphoreData());
+            
         }
     }
 
@@ -211,12 +218,12 @@ public class AgentController : MonoBehaviour
             foreach (AgentData agent in agentsData.positions)
             {
                 Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
-
+                Vector3 zeroes = new Vector3(0, 0, 0);
                 GameObject car;
                 if (!started)
                 {
                     //prevPositions[agent.id] = newAgentPosition;
-                    agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
+                    agents[agent.id] = Instantiate(agentPrefab, zeroes, Quaternion.identity);
                     car = agents[agent.id];
                     car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
                     car.GetComponent<MoveCar>().setMoveTime(timeToUpdate);
@@ -225,9 +232,6 @@ public class AgentController : MonoBehaviour
                 {
                     //GameObject carAgent;
                     if (agents.TryGetValue(agent.id, out car))
-
-                    Vector3 currentPosition = new Vector3();
-                    if (currPositions.TryGetValue(agent.id, out currentPosition))
                     {
 
                         car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
@@ -235,11 +239,7 @@ public class AgentController : MonoBehaviour
 
                     else
                     {
-                        agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
-                        print("aqui esta mal " + agent.id);
-                        print("aqui esta mal " + agent.id);
-                    }
-                    currPositions[agent.id] = newAgentPosition;
+                        agents[agent.id] = Instantiate(agentPrefab, zeroes, Quaternion.identity);
                         car = agents[agent.id];
                         car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
                         car.GetComponent<MoveCar>().setMoveTime(timeToUpdate);
@@ -249,20 +249,18 @@ public class AgentController : MonoBehaviour
                 }
 
                 // check if next destination is the car agent's destination
-                if (agentDestinations.TryGetValue(agent.id, out destinationPos))
+                //Debug.Log(agentDestinations);
+                
+                if(agentDestinations.TryGetValue(agent.id, out destinationPos))
                 {
-                    Debug.Log("innn");
-                    if(newAgentPosition == destinationPos)
-                    {
-                        Debug.Log("enterinf");
-                        agents[agent.id].GetComponent<MoveCar>().DestroyAll(destinationPos);
-                        //agents[agent.id].GetComponent<MoveCar>().hasReachedDestination = true;
+                    if(destinationPos == newAgentPosition) {
+                        agents[agent.id].GetComponent<MoveCar>().DestroyAll();
                     }
+                
                 }
 
                 updated = true;
-
-
+                if (!started) started = true;
             }
         }
     }
@@ -338,16 +336,19 @@ public class AgentController : MonoBehaviour
                 foreach (AgentData agentDestination in destinationsData.positions)
                 {
                     Vector3 destinationPosition = new Vector3(agentDestination.x, agentDestination.y, agentDestination.z);
+                    Debug.Log("id: " + agentDestination.id);
+                    Debug.Log(destinationPosition.x);
+                    Debug.Log(destinationPosition.y);
+                    Debug.Log(destinationPosition.z);
 
                     // add destination of agent if id is not in the dictionary
-                    if (agentDestinations.TryGetValue(agentDestination.id, out v)== false)
-                    {
+                    if (agentDestinations.TryGetValue(agentDestination.id, out v) == false)
+                     {
                         
                         agentDestinations[agentDestination.id] = destinationPosition;
-                    }
+                     }
                 }
 
-            Debug.Log(agentDestinations);
             }
         }
 

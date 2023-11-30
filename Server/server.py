@@ -44,7 +44,7 @@ def getAgents():
     global cityModel
 
     if request.method == 'GET':
-        agentPositions = [{"id": str(element.unique_id), "x": x, "y":0.2, "z":z}
+        agentPositions = [{"id": str(element.unique_id), "x": x, "y":0, "z":z}
                           for a, (x, z) in cityModel.grid.coord_iter()
                           for element in a  
                           if isinstance(element, Car)]
@@ -69,10 +69,11 @@ def getDestinations():
     global cityModel
     
     if request.method == 'GET':
-        destinations = [{"id": str(element.unique_id), "x": element.destination[0], "y":0.2, "z":element.destination[1]} 
+        destinations = [{"id": str(element.unique_id), "x": element.destination[0], "y":0, "z":element.destination[1]} 
                           for a, (x, z) in cityModel.grid.coord_iter()
                           for element in a  
                           if isinstance(element, Car)]
+        print("ESTE ES DESTINOOOO:")
         print(destinations)
         return jsonify({'positions':destinations})
 
