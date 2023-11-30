@@ -39,16 +39,30 @@ def initModel():
 
         return jsonify({"message":"Default parameters recieved, model initiated."})
 
+@app.route('/validate_attempt', methods=['POST'])
+def validate_attempt():
+    global cityModel
+
+    if request.method == 'POST':
+        data = [{"year": 2023, "classroom": 302, "name": "Equipo1 Santiago Benitez y Sergio Zuckermann", "num_cars": cityModel.arrived}
+                        #   for a, (x, z) in cityModel.grid.coord_iter()
+                        #   for element in a  
+                        #   if isinstance(element, Car)
+                        ]
+        # print(data)
+        return jsonify({'data': data})
+    
+
 @app.route('/getAgents', methods=['GET'])
 def getAgents():
     global cityModel
 
     if request.method == 'GET':
-        agentPositions = [{"id": str(element.unique_id), "x": x, "y":0, "z":z}
+        agentPositions = [{"id": str(element.unique_id), "x": x, "y":.06, "z":z}
                           for a, (x, z) in cityModel.grid.coord_iter()
                           for element in a  
                           if isinstance(element, Car)]
-        print(agentPositions)
+        # print(agentPositions)
         return jsonify({'positions':agentPositions})
     
 @app.route('/getSemaphore', methods=['GET'])
@@ -61,7 +75,7 @@ def getSemaphore():
                            for a, (x, z) in cityModel.grid.coord_iter()
                            for element in a  
                            if isinstance(element, Traffic_Light)]
-        print(agentState)
+        # print(agentState)
         return jsonify({'positions':agentState})
 
 @app.route('/getDestinations', methods=['GET'])
@@ -69,12 +83,10 @@ def getDestinations():
     global cityModel
     
     if request.method == 'GET':
-        destinations = [{"id": str(element.unique_id), "x": element.destination[0], "y":0, "z":element.destination[1]} 
+        destinations = [{"id": str(element.unique_id), "x": element.destination[0], "y":.06, "z":element.destination[1]} 
                           for a, (x, z) in cityModel.grid.coord_iter()
                           for element in a  
                           if isinstance(element, Car)]
-        print("ESTE ES DESTINOOOO:")
-        print(destinations)
         return jsonify({'positions':destinations})
 
 @app.route('/getObstacles', methods=['GET'])
