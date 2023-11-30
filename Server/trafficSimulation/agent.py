@@ -22,6 +22,7 @@ class Car(Agent):
         self.path = None # agent path
         self.destination = self.goal() #Car destination
         self.can_move = True
+        # self.patience = random.randint(1, 4 - 1)
 
     #Function to determine the destination of the car   
     def goal(self):
@@ -50,8 +51,10 @@ class Car(Agent):
        
         # check if car agent has reached destination 
         if self.pos == self.destination:
+            self.model.arrived += 1
             self.model.grid.remove_agent(self)
             self.model.schedule.remove(self)
+            
             return
         
         # Check if agent has no path
@@ -86,6 +89,25 @@ class Car(Agent):
             if self.is_valid_pos(self.next_pos) and self.can_move:
                 self.model.grid.move_agent(self, self.next_pos)
                 self.next_pos = None
+            #     self.patience = random.randint(1, 4 - 1)
+            # elif self.patience == 0:
+            #     self.path = None
+            #     possible=[[],[]]
+            #     i = 0
+            #     for i, neighbor in enumerate(self.model.grid.get_neighborhood(self.pos)):
+            #         p = self.find_path(neighbor, self.destination)
+            #         length = len(p)
+            #         possible[0].append(p)
+            #         possible[1].append(length)
+
+            #     # Finding the minimum length and corresponding path
+            #     min_length_index = possible[1].index(min(possible[1]))
+            #     self.path = possible[0][min_length_index]
+
+            # else:   
+            #     self.patience -= 1
+            #     pass
+
         
        
         
