@@ -5,6 +5,8 @@ from trafficSimulation.agent import *
 import json
 from trafficSimulation.g import gen_graph
 import random
+import requests
+import json
 
 class CityModel(Model):
     """ 
@@ -24,15 +26,16 @@ class CityModel(Model):
         self.destination = [] #List of destinations
         self.ids = 0 #Initialize the IDs used for the cars
         self.index = 0 #The index for the spawn positions
+        self.arrived = 0 # Number of car agents that have reached their destination
 
         # Load the map file. The map file is a text file where each character represents an agent.
         with open('static/city_files/2023_base.txt') as baseFile:
             lines = baseFile.readlines()
             # generate the graph gicen the city map
             self.graph = gen_graph(lines)
-            self.width = len(lines[0])
+            self.width = len(lines[0]) - 1
             self.height = len(lines)
-            self.border = [(0,0), (0,24), (23,0), (23,24)]
+            self.border = [(0,0), (0,self.height-1), (self.width-1,0), (self.width-1,self.height-1)]
             self.grid = MultiGrid(self.width, self.height, torus = False) 
             self.schedule = RandomActivation(self)
 
@@ -129,20 +132,7 @@ class CityModel(Model):
         
         self.steps += 1
         #Every ten steps new cars spawn
-        if self.steps % 10 == 0:
+        if self.steps % 4 == 0:
             for i in range(4):
                 self.spawn()
         self.schedule.step()
-        
-        # check if cars are cras
-        # for a_list,b in self.grid.coord_iter():
-        #     for agent in a_list:
-        #         c = 0
-        #         if isinstance(agent, Car):
-        #             c+=1
-        #     if c > 1:
-        #         print("estan chocando")
-        #         self.running = False
-        #         return
-        #     else:
-        #         print("fine")
