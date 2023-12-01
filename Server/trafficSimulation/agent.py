@@ -22,7 +22,9 @@ class Car(Agent):
         self.path = None # agent path
         self.destination = self.goal() #Car destination
         self.can_move = True
-        # self.patience = random.randint(1, 4 - 1)
+        self.waiting_time = 0
+    
+
 
     #Function to determine the destination of the car   
     def goal(self):
@@ -35,20 +37,6 @@ class Car(Agent):
         Determines if the agent can move in the direction that was chosen
         """        
         
-        # check if agent has crashed
-        for a in self.model.grid.get_cell_list_contents(self.pos):
-            c = 0
-            if isinstance(a, Car):
-                c+=1
-        
-        # print("this is c")
-        # print(c)
-        if c>1:
-            print(f"crashing at pos {self.pos}")
-            
-            return
-        
-       
         # check if car agent has reached destination 
         if self.pos == self.destination:
             self.model.arrived += 1
@@ -70,7 +58,6 @@ class Car(Agent):
             
             while self.next_pos == self.pos:
                 self.next_pos = self.find_next_pos()
-                
             return
         
         # validate if the agent can move to that position
@@ -89,46 +76,16 @@ class Car(Agent):
             if self.is_valid_pos(self.next_pos) and self.can_move:
                 self.model.grid.move_agent(self, self.next_pos)
                 self.next_pos = None
-            #     self.patience = random.randint(1, 4 - 1)
-            # elif self.patience == 0:
-            #     self.path = None
-            #     possible=[[],[]]
-            #     i = 0
-            #     for i, neighbor in enumerate(self.model.grid.get_neighborhood(self.pos)):
-            #         p = self.find_path(neighbor, self.destination)
-            #         length = len(p)
-            #         possible[0].append(p)
-            #         possible[1].append(length)
-
-            #     # Finding the minimum length and corresponding path
-            #     min_length_index = possible[1].index(min(possible[1]))
-            #     self.path = possible[0][min_length_index]
-
-            # else:   
-            #     self.patience -= 1
-            #     pass
-
-        
-       
-        
-        # # check if current direction of the car is not None (This happens when car agent is in a cell where there is also a Traffic Light agent)
-        # if self.current_direction is not None:
-        #     next_pos = self.find_next_pos(self.current_direction)
-        #     if self.is_valid_pos(next_pos): # validate next position
-        #         self.model.grid.move_agent(self, next_pos)
-        #         self.current_direction = None
-        #     return
-        
-        # # find direction to move based on the current position of the car agent
-        # direction = self.find_direction()
+                self.waiting_time = 0  # Reset waiting time when the agent moves
+            else:
+                self.waiting_time +=1
                 
-        
-        # check if car agent can move and if next position is valid
-        # if self.can_move:
-            
-            
-
-
+            # Check if the agent has been waiting for too long
+            if self.waiting_time > 3:
+                self.path = self.find_path(self.pos, self.destination)  # Recalculate path
+                self.next_pos = None
+                self.waiting_time = 0  # Reset waiting time
+                
     # Function to find path using A* pathfinding algorithm
     def find_path(self, start, destination):
         # Use A* algorithm from networkx
@@ -136,14 +93,15 @@ class Car(Agent):
         return path
     
     # Function to find the current direction of the road
-    def find_direction(self):
+    def find_direction(self,pos):
+        print(f"ocurred at {self.pos}")
         # check direction of the road in the current position
-        for agent in self.model.grid.get_cell_list_contents(self.pos):
+        for agent in self.model.grid.get_cell_list_contents(pos):
             if isinstance(agent, Road):      
                 direction = agent.direction
-            return direction
+                return direction
+            
                 
-
     # Function to move the agent to the proper direction
     def find_next_pos(self):
         
@@ -151,31 +109,15 @@ class Car(Agent):
         x, y = self.path[0]
         self.path = self.path[1:]
         return (x,y)
-        
-        # # move accordingly based on the current direction of the road
-        # if direction == "left":
-        #     return (x-1, y)
-        # elif direction == "Right":
-        #     return (x+1, y)
-        # elif direction == "Up":
-        #     return (x, y+1)
-        # elif direction == "Down":
-        #     return (x, y-1)
-        # else:
-        #     return(x,y)
-        #     print(f"default case entered, could be an error. Happened at pos: {self.pos}")
                 
     # Function to check if the next position is valid
     def is_valid_pos(self, next_pos):
         # check for presence of other car agents and/or obstacles
         for agent in self.model.grid.get_cell_list_contents(next_pos):
-            if isinstance(agent, Car):
+            if isinstance(agent, Car) or isinstance(agent, Obstacle):
                 return False
         return True
         
-
-    
-
     def step(self):
         """ 
         Determines the new direction it will take, and then moves
