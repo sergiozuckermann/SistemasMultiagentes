@@ -140,4 +140,4 @@ class CityModel(Model):
         if self.steps % 4 == 0:
             for i in range(4):
                 self.spawn()
-
+        self.schedule.step()

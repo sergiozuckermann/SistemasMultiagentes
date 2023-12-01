@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4953523728546553583}
   - component: {fileID: 6594888983649993568}
   m_Layer: 0
-  m_Name: Edificio
+  m_Name: Llegada
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b19d829a69f23d04dbea11e00da52c59, type: 2}
+  - {fileID: 2100000, guid: 43db63e4aeb2e5949b3cea1994d87f60, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
