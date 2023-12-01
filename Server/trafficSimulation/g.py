@@ -1,54 +1,26 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-
-# Data mapping symbols to their meanings
-symbol_mapping = {
-    ">" : "Right",
-    "<" : "Left",
-    "S" : 15,
-    "s" : 7,
-    "#" : "Obstacle",
-    "v" : "Down",
-    "^" : "Up",
-    "D" : "Destination"
-}
-
-# Given map
-city_map = """
-v<<<<<<<<<<<<<<<<<s<<<<<
-v<<<<<<<<<<<<<<<<<s<<<<^
-vv#D#########vv#SS###D^^
-vv###########vv#^^####^^
-vv##########Dvv#^^D###^^
-vv#D#########vv#^^####^^
-vv<<<<<<s<<<<vv#^^####^^
-vv<<<<<<s<<<<vv#^^####^^
-vv####SS#####vv#^^####^^
-vvD##D^^####Dvv#^^####^^
-vv####^^#####vv#^^D###^^
-SS####^^#####vv#^^####^^
-vvs<<<<<<<<<<<<<<<<<<<<<
-vvs<<<<<<<<<<<<<<<<<<<<^
-vv##########vv###^^###^^
-vv>>>>>>>>>>>>>>>>>>>s^^
-vv>>>>>>>>>>>>>>>>>>>s^^
-vv####vv##D##vv#^^####SS
-vv####vv#####vv#^^####^^
-vv####vv#####vv#^^###D^^
-vv###Dvv####Dvv#^^####^^
-vv####vv#####vv#^^####^^
-vv####SS#####SS#^^#D##^^
-v>>>>s>>>>>>s>>>>>>>>>>^
->>>>>s>>>>>>s>>>>>>>>>>^
-"""
+import json
 
 
+# function to generate the graph that represents the city
 def gen_graph(map_lines):
         # Convert the map into a list of lists
         city_map_lines = [list(line.strip()) for line in map_lines]
 
         # Create a directed graph
         city_graph = nx.DiGraph()
+        
+        # Specify the path to the JSON file (symbol representation)
+        file_path = './static/city_files/mapDictionary.json'
+
+        # Open the JSON file for reading
+        with open(file_path, 'r') as file:
+                # Load the JSON data from the file
+                symbol_mapping = json.load(file)
+
+        # # Print the loaded data
+        # print(data)
 
         # Iterate through the map and add nodes and edges to the graph
         n = (len(city_map_lines))
@@ -117,7 +89,7 @@ def gen_graph(map_lines):
                                                 
                 n-=1 # decrement n by 1
                 
-        # # Visualize the graph (optional)
+        # Visualize the graph (optional)
         # pos = dict((node, node) for node in city_graph.nodes())
         # nx.draw(city_graph, pos, with_labels=True, font_weight='bold', node_size=700, node_color='lightgray', arrowsize=20)
         # plt.show()
@@ -126,7 +98,7 @@ def gen_graph(map_lines):
                     
                     
 
-# with open('city_files/2022_base.txt') as baseFile:
+# with open('static/city_files/2023_base.txt') as baseFile:
 #             lines = baseFile.readlines()
 #             # generate the graph gicen the city map
 #             gen_graph(lines)
