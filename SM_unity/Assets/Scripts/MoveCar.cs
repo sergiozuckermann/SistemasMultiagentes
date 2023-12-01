@@ -121,7 +121,7 @@ public class MoveCar : MonoBehaviour
         Matrix4x4 move = HW_Transforms.TranslationMat(displacement.x, displacement.y, displacement.z);
 
         // rotate matrix for the car
-        Matrix4x4 rotate = HW_Transforms.RotateMat(angle + 180, AXIS.Y);
+        Matrix4x4 rotate = HW_Transforms.RotateMat(angle, AXIS.Y);
 
         // scale matrix for the car
         Matrix4x4 carScale = HW_Transforms.ScaleMat(.05f, .05f, .05f);
@@ -155,7 +155,7 @@ public class MoveCar : MonoBehaviour
             Matrix4x4 wheelTransform = HW_Transforms.TranslationMat(wheelPositions[i].x, wheelPositions[i].y, wheelPositions[i].z);
 
             // composite matrix for the wheels
-            Matrix4x4 wheelComposite = carComposite * wheelTransform; //rotateW
+            Matrix4x4 wheelComposite = carComposite * wheelTransform * rotateW;
             for (int j = 0; j < wheelNewVertices[i].Length; j++)
             {
                 Vector4 temp = new Vector4(wheelBaseVertices[i][j].x, wheelBaseVertices[i][j].y, wheelBaseVertices[i][j].z, 1);
