@@ -168,9 +168,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   layout: {fileID: 4900000, guid: ef090b4578778ee40984c76b36cec084, type: 3}
-  roadPrefab: {fileID: 118479154725710776, guid: 66d9cc4006518364d9bc127f461cc299, type: 3}
-  emptyRoadPrefab: {fileID: 118479154725710776, guid: 9adde3af3aa7c39428396db04a24718c, type: 3}
+  roadPrefab: {fileID: 2905869620700736730, guid: 699f905411dc9ae439356fd4d8252495, type: 3}
+  emptyRoadPrefab: {fileID: 1865284123366919321, guid: d0d23c85072c9fe4b8f34f473049270a, type: 3}
   buildingPrefab: {fileID: 3317074415593835910, guid: 19b3b70dbcfa1054dacdf7b79075577d, type: 3}
+  DestinationPrefab: {fileID: 0}
   tileSize: 1
 --- !u!1 &1044445470
 GameObject:
@@ -201,10 +202,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f75c9b9c94051a4f93c0008f4f2cfee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agentPrefab: {fileID: 6167659323518830527, guid: 9b8a8fef424775a4599b841f70b76724, type: 3}
+  agentPrefab: {fileID: 2307766384760165676, guid: 96420a95f8c6e8c4580976c5ee83d618, type: 3}
   obstaclePrefab: {fileID: 3317074415593835910, guid: 19b3b70dbcfa1054dacdf7b79075577d, type: 3}
-  floor: {fileID: 118479154725710776, guid: 66d9cc4006518364d9bc127f461cc299, type: 3}
-  semaphorePrefab: {fileID: 7346072512571026644, guid: 4f0d0a5605f239042b97e0646f799559, type: 3}
+  floor: {fileID: 1865284123366919321, guid: d0d23c85072c9fe4b8f34f473049270a, type: 3}
+  semaphorePrefab: {fileID: 1507209988052139292, guid: 1ce545e2792b29942b20d1e0dfe3fc51, type: 3}
   NAgents: 10
   width: 1
   height: 1

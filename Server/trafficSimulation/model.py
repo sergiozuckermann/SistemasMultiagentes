@@ -1,3 +1,5 @@
+import requests
+import json
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
@@ -101,6 +103,7 @@ class CityModel(Model):
         # self.num_agents = N
         self.running = True
         self.steps = 0 #Steps taken
+        self.arrived = 0 #Total Cars that arrived
 
     #Function to generate positions for cars to spawn in
     def pos_gen(self):
@@ -131,7 +134,9 @@ class CityModel(Model):
     def step(self):
         
         self.steps += 1
-        #Every ten steps new cars spawn
+        print(self.arrived)
+        print(self.steps)
+        #Every 4 steps new cars spawn
         if self.steps % 4 == 0:
             for i in range(4):
                 self.spawn()

@@ -23,8 +23,8 @@ class Car(Agent):
         self.destination = self.goal() #Car destination
         self.can_move = True
         self.waiting_time = 0
-        self.patience = random.randint(2,4)
-        self.stored_patience = self.patience
+    
+
 
     #Function to determine the destination of the car   
     def goal(self):
@@ -39,8 +39,10 @@ class Car(Agent):
         
         # check if car agent has reached destination 
         if self.pos == self.destination:
+            self.model.arrived += 1
             self.model.grid.remove_agent(self)
             self.model.schedule.remove(self)
+            
             return
         
         # Check if agent has no path

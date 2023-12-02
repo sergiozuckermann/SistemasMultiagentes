@@ -10,6 +10,7 @@ public class CityMaker : MonoBehaviour
     [SerializeField] GameObject roadPrefab;
     [SerializeField] GameObject emptyRoadPrefab;
     [SerializeField] GameObject buildingPrefab;
+    [SerializeField] GameObject DestinationPrefab;
     [SerializeField] int tileSize;
 
     // Start is called before the first frame update
@@ -70,8 +71,7 @@ public class CityMaker : MonoBehaviour
                 x += 1;
             } else if (tiles[i] == 'D'){
                 position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(buildingPrefab, position, Quaternion.identity);
-                tile.GetComponent<Renderer>().materials[0].color = Color.red;
+                tile = Instantiate(DestinationPrefab, position, Quaternion.identity);
                 tile.transform.parent = transform;
                 x += 1;
             } else if (tiles[i] == '#') {
