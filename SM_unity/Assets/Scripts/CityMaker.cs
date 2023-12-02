@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// city maker script modified for the traffic simulation by Santiago Benitez and Sergio Zucckermann
+
 public class CityMaker : MonoBehaviour
 {
     [SerializeField] TextAsset layout;

@@ -8,7 +8,6 @@ using UnityEngine;
 
 public class MoveCar : MonoBehaviour
 {
-    //AgentData agentData;
 
 
     // displacement vector where the car will move
@@ -42,27 +41,24 @@ public class MoveCar : MonoBehaviour
 
     // wheel positions
     [SerializeField] Vector3[] wheelPositions;
-    //Vector3 w1Pos = new Vector3(1.279f, -0.37f, -1.88f);
-    //Vector3 w2Pos = new Vector3(1.279f, -0.37f, 1.98f);
-    //Vector3 w3Pos = new Vector3(-1.26f, -0.37f, 1.98f);
-    //Vector3 w4Pos = new Vector3(-1.26f, -0.37f, -1.892f);
 
-    float elapsedTime = 0f, prevAngle = 0f;
+    // control variables for interpolation
+    float elapsedTime = 0f, prevAngle = 0f, t;
     public float moveTime;
-    float t;
 
+    // boolean flags
     public bool starting = true, hasReachedDestination = false;
 
-    Vector3 startPos, finalPos, zeroes;
+    Vector3 startPos, finalPos;
 
     // Start is called before the first frame update
     void Start()
     {
-        zeroes = new Vector3(0,0,0);
+
         // instantiate wheels in origin 
         for(int i = 0; i < wheels.Length; i++)
         {
-            wheels[i] = Instantiate(wheel, zeroes, Quaternion.identity);
+            wheels[i] = Instantiate(wheel, Vector3.zero, Quaternion.identity);
         }
 
         // get mesh of the car
@@ -100,7 +96,7 @@ public class MoveCar : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-            if(elapsedTime < moveTime)
+            if(elapsedTime < moveTime) // check when to move from one point to the other
         {
             DoTransform();
         }
@@ -110,12 +106,12 @@ public class MoveCar : MonoBehaviour
 
     public void DoTransform()
     {
+         
+        t = elapsedTime / moveTime; // time
 
-        t = elapsedTime / moveTime;
+        displacement = startPos + (finalPos - startPos) * t; // interpolation
 
-        displacement = startPos + (finalPos - startPos) * t;
-
-        float angle = getAngle();
+        float angle = getAngle(); // find angle
 
         // move matrix for the car
         Matrix4x4 move = HW_Transforms.TranslationMat(displacement.x, displacement.y, displacement.z);
@@ -194,12 +190,15 @@ public class MoveCar : MonoBehaviour
 
     public void setNextPosition(Vector3 newPos)   
     {
+        // if it is moving to the first destination
         if(starting)
         {
             starting = false;
             startPos = newPos;
             finalPos = newPos;
         }
+
+        // set the final pos as the start pos and update the final pos to newPos
         startPos = finalPos;
         finalPos = newPos;
         elapsedTime = 0f;
@@ -212,6 +211,7 @@ public class MoveCar : MonoBehaviour
         moveTime = time;
     }
 
+    // method to destroy the instance of the game object and the wheel
     public void DestroyAll()
     {
         Debug.Log("destroyed called");
