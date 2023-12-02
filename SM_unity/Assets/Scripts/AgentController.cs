@@ -2,6 +2,8 @@
 // C# client to interact with Python. Based on the code provided by Sergio Ruiz.
 // Octavio Navarro. October 2023
 
+// modified for the traffic simulation by Santiago Benitez and Sergio Zucckermann
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -81,23 +83,25 @@ public class AgentController : MonoBehaviour
     */
     string serverUrl = "http://localhost:8585";
     string getAgentsEndpoint = "/getAgents";
-    string getObstaclesEndpoint = "/getObstacles";
     string getDestinationsUrl = "/getDestinations";
     string sendConfigEndpoint = "/init";
     string updateEndpoint = "/update";
-
-    AgentsData agentsData, destinationsData, semaphoreData; //semaphoreData
-    Dictionary<string, GameObject> agents;
-    Dictionary<string, Vector3> agentDestinations, prevPositions, currPositions;
-    
     string getSemaphore = "/getSemaphore";
     
-  
+    // game objects
+    public GameObject agentPrefab, obstaclePrefab, floor, semaphorePrefab; 
+
+    AgentsData agentsData, destinationsData, semaphoreData; // Instances of AgentsData
+
+    // Dictionaries
+    Dictionary<string, GameObject> agents;
+    Dictionary<string, Vector3> agentDestinations;
     Dictionary <string, Light> lights;
 
+    // flags
     bool updated = false, started = false, starteds=false;
 
-    public GameObject agentPrefab, obstaclePrefab, floor, semaphorePrefab; 
+    // variables
     public int NAgents, width, height;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
@@ -105,16 +109,12 @@ public class AgentController : MonoBehaviour
     void Start()
     {
         agentsData = new AgentsData();
-
         destinationsData = new AgentsData();
         agentDestinations = new Dictionary<string, Vector3>();
         semaphoreData= new AgentsData();
-        prevPositions = new Dictionary<string, Vector3>();
-        currPositions = new Dictionary<string, Vector3>();
         lights = new Dictionary<string, Light>();
         agents = new Dictionary<string, GameObject>();
         floor.transform.localScale = new Vector3((float)width / 10, 1, (float)height / 10);
-
         floor.transform.localPosition = new Vector3((float)width / 2 - 0.5f, 1, (float)height / 2 - 0.5f);
 
         timer = timeToUpdate;
@@ -125,7 +125,7 @@ public class AgentController : MonoBehaviour
 
     private void Update()
     {
-        if (timer < 0)
+        if (timer < 0) // determine when to update the simulation
         {
             timer = timeToUpdate;
             updated = false;
@@ -135,15 +135,6 @@ public class AgentController : MonoBehaviour
         if (updated)
         {
             timer -= Time.deltaTime;
-            Vector3 destinationPos;
-           foreach (AgentData agent in agentsData.positions)
-            {
-                
-            }
-            
-     
-        //    // float t = (timer / timeToUpdate);
-        //    // dt = t * t * ( 3f - 2f*t);
         }
     }
 
@@ -159,7 +150,6 @@ public class AgentController : MonoBehaviour
             StartCoroutine(GetAgentsData());
             StartCoroutine(GetDestinationsData());
             StartCoroutine(GetSemaphoreData());
-            
         }
     }
 
@@ -211,7 +201,6 @@ public class AgentController : MonoBehaviour
         {
             // Once the data has been received, it is stored in the agentsData variable.
             // Then, it iterates over the agentsData.positions list to update the agents positions.
-            Debug.Log("updating..");
             agentsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
             Vector3 destinationPos;
@@ -222,23 +211,26 @@ public class AgentController : MonoBehaviour
                 GameObject car;
                 if (!started)
                 {
-                    //prevPositions[agent.id] = newAgentPosition;
+                    // if the simulation is starting create the gameobject
                     agents[agent.id] = Instantiate(agentPrefab, zeroes, Quaternion.identity);
                     car = agents[agent.id];
+
+                    // set the position where the agent should move and the move time
                     car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
                     car.GetComponent<MoveCar>().setMoveTime(timeToUpdate);
                 }
                 else
                 {
-                    //GameObject carAgent;
+                    // after starting
                     if (agents.TryGetValue(agent.id, out car))
                     {
-
+                        // if the car exists update the position where it should move
                         car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
                     }
 
                     else
                     {
+                        // if it does not exist create it and set the position where it should move
                         agents[agent.id] = Instantiate(agentPrefab, zeroes, Quaternion.identity);
                         car = agents[agent.id];
                         car.GetComponent<MoveCar>().setNextPosition(newAgentPosition);
@@ -248,12 +240,11 @@ public class AgentController : MonoBehaviour
 
                 }
 
-                // check if next destination is the car agent's destination
-                //Debug.Log(agentDestinations);
-                
+                // check if next destination is the car agent's destination                
                 if(agentDestinations.TryGetValue(agent.id, out destinationPos))
                 {
-                    if(destinationPos == newAgentPosition) {
+                    if(destinationPos == newAgentPosition) { 
+                        // delete the car and the wheels if they reach the destination
                         agents[agent.id].GetComponent<MoveCar>().DestroyAll();
                     }
                 
@@ -268,7 +259,7 @@ public class AgentController : MonoBehaviour
 
     IEnumerator GetSemaphoreData() 
     {
-        // The GetAgentsData method is used to get the agents data from the server.
+        // The GetSemaphoreData method is used to get the semaphores data.
         UnityWebRequest www = UnityWebRequest.Get(serverUrl + getSemaphore);
         yield return www.SendWebRequest();
 
@@ -281,10 +272,11 @@ public class AgentController : MonoBehaviour
             semaphoreData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
             foreach(AgentData semaphore in semaphoreData.positions)
             {
+                // semaphore positions
                 Vector3 newAgentPosition = new Vector3(semaphore.x, semaphore.y, semaphore.z);
                     if(!starteds)
                     {
-                        prevPositions[semaphore.id] = newAgentPosition;
+                        // Instantiate semaphore gameobjects with proper rotation based on the direction of the road
                         if(semaphore.direction == "right"){
                             agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.identity);
                         }
@@ -298,11 +290,13 @@ public class AgentController : MonoBehaviour
                             agents[semaphore.id] = Instantiate(semaphorePrefab, newAgentPosition, Quaternion.Euler(0, 90, 0));   
                         }
                     
+                        // add the gameobject to the lights dictionary based on the semaphore id
                         lights[semaphore.id] = agents[semaphore.id].GetComponentInChildren<Light>();
 
                     }
                     else
                     {
+                        // Check the state of the semaphore and update the color of the light accordingly
                         if (semaphore.state == "True"){
                             lights[semaphore.id].color= Color.green;
                         }
@@ -319,9 +313,9 @@ public class AgentController : MonoBehaviour
         
         IEnumerator GetDestinationsData()
         {
-            // The GetAgentsData method is used to get the agents data from the server.
+        // The GetDestinationsData method is used to get the destinatio position of the agents
 
-            UnityWebRequest www = UnityWebRequest.Get(serverUrl + getDestinationsUrl);
+        UnityWebRequest www = UnityWebRequest.Get(serverUrl + getDestinationsUrl);
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -329,17 +323,13 @@ public class AgentController : MonoBehaviour
             else
             {
                 // Once the data has been received, it is stored in the agentsData variable.
-                // Then, it iterates over the agentsData.positions list to update the agents positions.
+                // Then, it iterates over the agentsData.positions list to update the destination positions.
                 destinationsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
                 Vector3 v;
                 foreach (AgentData agentDestination in destinationsData.positions)
                 {
                     Vector3 destinationPosition = new Vector3(agentDestination.x, agentDestination.y, agentDestination.z);
-                    Debug.Log("id: " + agentDestination.id);
-                    Debug.Log(destinationPosition.x);
-                    Debug.Log(destinationPosition.y);
-                    Debug.Log(destinationPosition.z);
 
                     // add destination of agent if id is not in the dictionary
                     if (agentDestinations.TryGetValue(agentDestination.id, out v) == false)
